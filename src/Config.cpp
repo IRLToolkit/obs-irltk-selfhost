@@ -15,7 +15,7 @@
 Config::Config() :
 	ConnectOnLoad(true),
 	SessionKey(""),
-	ConnectUrl("wss://core.irltoolkit.com:6969")
+	ConnectUrl("")
 {
 	qsrand(QTime::currentTime().msec());
 
