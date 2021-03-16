@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="logos">
+    <file alias="checkmark">data/images/checkmark.png</file>
+    <file alias="times">data/images/times.png</file>
+  </qresource>
+</RCC>
