@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 
+if(WIN32)
+	cmake_minimum_required(VERSION 3.16)
+endif()
+
 # Change obs-plugintemplate to your plugin's name in a machine-readable format
 # (e.g.: obs-myawesomeplugin) and set 
 project(obs-irltk-selfhost VERSION 1.0.0)
@@ -130,6 +134,18 @@ if(WIN32)
 		"${OBS_FRONTEND_LIB}"
     )
 
+    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+		COMMAND if $<CONFIG:Release>==1,$<CONFIG:RelWithDebInfo>>==1 (
+            "${CMAKE_COMMAND}" -E copy
+                "${QTDIR}/bin/Qt5WebSockets.dll"
+                "${CMAKE_BINARY_DIR}/$<CONFIG>")
+
+		COMMAND if $<CONFIG:Debug>==1 (
+            "${CMAKE_COMMAND}" -E copy
+                "${QTDIR}/bin/Qt5WebSocketsd.dll"
+                "${CMAKE_BINARY_DIR}/$<CONFIG>")
+	)
+
 	# --- Release package helper ---
 	# The "release" folder has a structure similar OBS' one on Windows
 	set(RELEASE_DIR "${PROJECT_SOURCE_DIR}/release")
@@ -153,6 +169,11 @@ if(WIN32)
                 "$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
                 "${RELEASE_DIR}/obs-plugins/${ARCH_NAME}"
         )
+
+        COMMAND if $<CONFIG:Release>==1 ("${CMAKE_COMMAND}" -E copy 
+			"$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
+			"${QTDIR}/bin/Qt5WebSockets.dll" 
+			"${RELEASE_DIR}/obs-plugins/${ARCH_NAME}")
 
         # If config is RelWithDebInfo, copy the pdb file
         COMMAND if $<CONFIG:RelWithDebInfo>==1 (
@@ -184,6 +205,12 @@ if(WIN32)
                 "${PROJECT_SOURCE_DIR}/data"
                 "${LIBOBS_INCLUDE_DIR}/../${OBS_BUILDDIR_ARCH}/rundir/$<CONFIG>/data/obs-plugins/${CMAKE_PROJECT_NAME}"
         )
+
+        COMMAND if $<CONFIG:Debug>==1 (
+			"${CMAKE_COMMAND}" -E copy
+				"$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
+				"${QTDIR}/bin/Qt5WebSocketsd.dll"
+				"${LIBOBS_INCLUDE_DIR}/../${OBS_BUILDDIR_ARCH}/rundir/$<CONFIG>/obs-plugins/${ARCH_NAME}")
     )
 	# --- End of sub-section ---
 
