@@ -139,11 +139,11 @@ if(WIN32)
 	set(RELEASE_DIR "${PROJECT_SOURCE_DIR}/release")
 
     add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-        COMMAND if $<CONFIG:Release>==1 (
+        COMMAND if $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>==1 (
 			"${CMAKE_COMMAND}" -E copy
 			"${QTDIR}/bin/Qt5WebSockets.dll"
 			"${RELEASE_DIR}/bin/${ARCH_NAME}/Qt5WebSockets.dll")
-		COMMAND if $<CONFIG:RelWithDebInfo>==1 (
+		COMMAND if $<CONFIG:Debug>==1 (
 			"${CMAKE_COMMAND}" -E copy
 			"${QTDIR}/bin/Qt5WebSocketsd.dll"
 			"${RELEASE_DIR}/bin/${ARCH_NAME}/Qt5WebSocketsd.dll")
