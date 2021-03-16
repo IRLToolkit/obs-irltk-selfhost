@@ -151,6 +151,16 @@ if(WIN32)
 	set(RELEASE_DIR "${PROJECT_SOURCE_DIR}/release")
 
     add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
+        COMMAND if $<CONFIG:Release>==1,$<CONFIG:RelWithDebInfo>==1 ("${CMAKE_COMMAND}" -E copy 
+			"$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
+			"${QTDIR}/bin/Qt5WebSockets.dll" 
+			"${RELEASE_DIR}/bin/${ARCH_NAME}/Qt5WebSockets.dll")
+        COMMAND if $<CONFIG:Debug>==1 (
+			"${CMAKE_COMMAND}" -E copy
+				"$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
+				"${QTDIR}/bin/Qt5WebSocketsd.dll"
+				"${LIBOBS_INCLUDE_DIR}/../${OBS_BUILDDIR_ARCH}/rundir/$<CONFIG>/obs-plugins/${ARCH_NAME}")
+
         # If config is Release or RelWithDebInfo, package release files
         COMMAND if $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>==1 (
             "${CMAKE_COMMAND}" -E make_directory
@@ -169,11 +179,6 @@ if(WIN32)
                 "$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
                 "${RELEASE_DIR}/obs-plugins/${ARCH_NAME}"
         )
-
-        COMMAND if $<CONFIG:Release>==1 ("${CMAKE_COMMAND}" -E copy 
-			"$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
-			"${QTDIR}/bin/Qt5WebSockets.dll" 
-			"${RELEASE_DIR}/obs-plugins/${ARCH_NAME}")
 
         # If config is RelWithDebInfo, copy the pdb file
         COMMAND if $<CONFIG:RelWithDebInfo>==1 (
@@ -205,12 +210,6 @@ if(WIN32)
                 "${PROJECT_SOURCE_DIR}/data"
                 "${LIBOBS_INCLUDE_DIR}/../${OBS_BUILDDIR_ARCH}/rundir/$<CONFIG>/data/obs-plugins/${CMAKE_PROJECT_NAME}"
         )
-
-        COMMAND if $<CONFIG:Debug>==1 (
-			"${CMAKE_COMMAND}" -E copy
-				"$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
-				"${QTDIR}/bin/Qt5WebSocketsd.dll"
-				"${LIBOBS_INCLUDE_DIR}/../${OBS_BUILDDIR_ARCH}/rundir/$<CONFIG>/obs-plugins/${ARCH_NAME}")
     )
 	# --- End of sub-section ---
 
