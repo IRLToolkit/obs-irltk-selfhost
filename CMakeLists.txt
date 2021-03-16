@@ -134,32 +134,19 @@ if(WIN32)
 		"${OBS_FRONTEND_LIB}"
     )
 
-    add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-		COMMAND if $<CONFIG:Release>==1,$<CONFIG:RelWithDebInfo>>==1 (
-            "${CMAKE_COMMAND}" -E copy
-                "${QTDIR}/bin/Qt5WebSockets.dll"
-                "${CMAKE_BINARY_DIR}/$<CONFIG>")
-
-		COMMAND if $<CONFIG:Debug>==1 (
-            "${CMAKE_COMMAND}" -E copy
-                "${QTDIR}/bin/Qt5WebSocketsd.dll"
-                "${CMAKE_BINARY_DIR}/$<CONFIG>")
-	)
-
 	# --- Release package helper ---
 	# The "release" folder has a structure similar OBS' one on Windows
 	set(RELEASE_DIR "${PROJECT_SOURCE_DIR}/release")
 
     add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD
-        COMMAND if $<CONFIG:Release>==1,$<CONFIG:RelWithDebInfo>==1 ("${CMAKE_COMMAND}" -E copy 
-			"$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
-			"${QTDIR}/bin/Qt5WebSockets.dll" 
-			"${RELEASE_DIR}/bin/${ARCH_NAME}/Qt5WebSockets.dll")
-        COMMAND if $<CONFIG:Debug>==1 (
+        COMMAND if $<CONFIG:Release>==1 (
 			"${CMAKE_COMMAND}" -E copy
-				"$<TARGET_FILE:${CMAKE_PROJECT_NAME}>"
-				"${QTDIR}/bin/Qt5WebSocketsd.dll"
-				"${LIBOBS_INCLUDE_DIR}/../${OBS_BUILDDIR_ARCH}/rundir/$<CONFIG>/obs-plugins/${ARCH_NAME}")
+			"${QTDIR}/bin/Qt5WebSockets.dll"
+			"${RELEASE_DIR}/bin/${ARCH_NAME}/Qt5WebSockets.dll")
+		COMMAND if $<CONFIG:RelWithDebInfo>==1 (
+			"${CMAKE_COMMAND}" -E copy
+			"${QTDIR}/bin/Qt5WebSocketsd.dll"
+			"${RELEASE_DIR}/bin/${ARCH_NAME}/Qt5WebSocketsd.dll")
 
         # If config is Release or RelWithDebInfo, package release files
         COMMAND if $<OR:$<CONFIG:Release>,$<CONFIG:RelWithDebInfo>>==1 (
