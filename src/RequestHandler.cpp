@@ -1,5 +1,5 @@
 #include <QJsonObject>
-#include <QThread>
+#include <QtCore/QThread>
 #include "RequestHandler.h"
 
 const QHash<QString, MethodHandler> RequestHandler::RequestHandlerMap
@@ -14,7 +14,7 @@ RequestHandler::RequestHandler()
 
 RequestResult RequestHandler::ProcessIncomingMessage(QJsonObject parsedMessage)
 {
-	RequestStatus errorCode;
+	RequestStatus errorCode = RequestStatus::NoError;
 	QString requestType = parsedMessage["requestType"].toString();
     QString messageId;
 	if (parsedMessage.contains("messageId"))
@@ -29,7 +29,7 @@ RequestResult RequestHandler::ProcessIncomingMessage(QJsonObject parsedMessage)
 	}
 
 	Request request(requestType, messageId, requestData);
-	if (errorCode)
+	if (errorCode != RequestStatus::NoError)
 		return RequestResult::BuildFailure(request, errorCode);
 
 	MethodHandler handler = RequestHandlerMap[requestType];
