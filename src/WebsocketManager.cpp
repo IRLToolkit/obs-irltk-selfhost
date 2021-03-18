@@ -12,7 +12,7 @@ WebsocketManager::WebsocketManager() :
 	connect(&_socket, &QWebSocket::textMessageReceived, this, &WebsocketManager::onTextMessageReceived);
 	connect(&_socket, &QWebSocket::stateChanged, [=]( QAbstractSocket::SocketState state ) {
 		emit connectionStateChanged(state);
-	});
+	});	
 }
 
 WebsocketManager::~WebsocketManager()
@@ -22,7 +22,7 @@ WebsocketManager::~WebsocketManager()
 
 void WebsocketManager::Connect(QString url)
 {
-	if (_socket.state() != 0)
+	if (_socket.state() != QAbstractSocket::UnconnectedState)
 		return;
 #ifdef DEBUG_MODE
 	blog(LOG_INFO, "Connecting to websocket server...");
@@ -32,7 +32,7 @@ void WebsocketManager::Connect(QString url)
 
 void WebsocketManager::Disconnect()
 {
-	if (_socket.state() == 0)
+	if (_socket.state() == QAbstractSocket::UnconnectedState)
 		return;
 #ifdef DEBUG_MODE
 	blog(LOG_INFO, "Disconnecting from websocket server...");
@@ -42,8 +42,8 @@ void WebsocketManager::Disconnect()
 
 void WebsocketManager::SendTextMessage(QString message)
 {
-	if (!isAuthenticated)
-		return;
+	//if (!isAuthenticated)
+	//	return;
 	_socket.sendTextMessage(message);
 
 #ifdef DEBUG_MODE
@@ -78,34 +78,6 @@ void WebsocketManager::onTextMessageReceived(QString message)
 #ifdef DEBUG_MODE
 	blog(LOG_INFO, "Incoming websocket message:\n%s", QT_TO_UTF8(message));
 #endif
-	if (!isAuthenticated) {
-		QJsonParseError error;
-		QJsonDocument j = QJsonDocument::fromJson(message.toUtf8(), &error);
-
-		if (error.error != QJsonParseError::NoError) {
-			blog(LOG_ERROR, "Websocket is pending authentication but incoming message was unable to be parsed. Error: %s | Message: %s", QT_TO_UTF8(error.errorString()), QT_TO_UTF8(message));
-			return;
-		}
-
-		QJsonObject incomingMessage = j.object();
-
-		if (!incomingMessage.contains("authenticationStatus")) {
-			blog(LOG_ERROR, "Websocket is pending authentication but incoming message does not contain `authenticationStatus` field!");
-			return;
-		}
-		bool authenticationStatus = incomingMessage["authenticationStatus"].toBool();
-		if (authenticationStatus) {
-			isAuthenticated = true;
-			emit connectionAuthenticationSuccess();
-		} else {
-			isAuthenticated = false;
-			QString failureReason = "Unknown reason.";
-			if (incomingMessage.contains("comment"))
-				failureReason = incomingMessage["comment"].toString();
-			emit connectionAuthenticationFailure(failureReason);
-		}
-		return;
-	}
 
 	QtConcurrent::run(&_threadPool, [=]() {
 		QJsonParseError error;
@@ -172,9 +144,25 @@ void WebsocketManager::onTextMessageReceived(QString message)
 
 			QString resultText = QJsonDocument(response).toJson();
 			QMetaObject::invokeMethod(this, "SendTextMessage", Qt::QueuedConnection, Q_ARG(QString, resultText));
+		} else if (parsedMessage["messageType"].toString() == "authenticationStatus") {
+			if (!parsedMessage.contains("authenticationStatus")) {
+				blog(LOG_ERROR, "authenticationStatus message does not contain `authenticationStatus` field!");
+				return;
+			}
+			bool authenticationStatus = parsedMessage["authenticationStatus"].toBool();
+			if (authenticationStatus) {
+				isAuthenticated = true;
+				QMetaObject::invokeMethod(this, "connectionAuthenticationSuccess", Qt::QueuedConnection);
+			} else {
+				isAuthenticated = false;
+				QString failureReason = "Unknown reason.";
+				if (parsedMessage.contains("comment"))
+					failureReason = parsedMessage["comment"].toString();
+				QMetaObject::invokeMethod(this, "Disconnect", Qt::QueuedConnection);
+				QMetaObject::invokeMethod(this, "connectionAuthenticationFailure", Qt::QueuedConnection, Q_ARG(QString, failureReason));
+			}
 		} else {
 			blog(LOG_ERROR, "Unhandled messageType in websocket message: `%s`.", QT_TO_UTF8(parsedMessage["messageType"].toString()));
-			return;
 		}
 	});
 }

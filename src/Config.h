@@ -18,6 +18,7 @@ class Config {
 		bool ConnectOnLoad;
 		QString SessionKey;
 		QString ConnectUrl;
+		bool AutoReconnect;
 
 	private:
 		;

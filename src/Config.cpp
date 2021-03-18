@@ -8,6 +8,7 @@
 #define PARAM_CONNECTONLOAD "ConnectOnLoad"
 #define PARAM_SESSIONKEY "SessionKey"
 #define PARAM_CONNECTURL "ConnectUrl"
+#define PARAM_AUTORECONNECT "AutoReconnect"
 
 #include "plugin-main.h"
 #include "Config.h"
@@ -15,7 +16,8 @@
 Config::Config() :
 	ConnectOnLoad(true),
 	SessionKey(""),
-	ConnectUrl("")
+	ConnectUrl(""),
+	AutoReconnect(true)
 {
 	qsrand(QTime::currentTime().msec());
 
@@ -32,10 +34,12 @@ void Config::Load()
 	ConnectOnLoad = config_get_bool(obsConfig, SECTION_NAME, PARAM_CONNECTONLOAD);
 	SessionKey = config_get_string(obsConfig, SECTION_NAME, PARAM_SESSIONKEY);
 	ConnectUrl = config_get_string(obsConfig, SECTION_NAME, PARAM_CONNECTURL);
+	AutoReconnect = config_get_bool(obsConfig, SECTION_NAME, PARAM_AUTORECONNECT);
 #ifdef DEBUG_MODE
     blog(LOG_INFO, "Connect on load: %d", ConnectOnLoad);
 	blog(LOG_INFO, "Session Key: %s", SessionKey.toStdString().c_str());
 	blog(LOG_INFO, "Websocket connect URL: %s", ConnectUrl.toStdString().c_str());
+	blog(LOG_INFO, "Auto reconnect: %d", AutoReconnect);
 	blog(LOG_INFO, "Finished loading settings!");
 #endif
 }
@@ -50,6 +54,8 @@ void Config::Save()
 		QT_TO_UTF8(SessionKey));
 	config_set_string(obsConfig, SECTION_NAME, PARAM_CONNECTURL,
 		QT_TO_UTF8(ConnectUrl));
+	config_set_bool(obsConfig, SECTION_NAME, PARAM_AUTORECONNECT,
+		AutoReconnect);
 
 	config_save(obsConfig);
 
@@ -69,6 +75,8 @@ void Config::SetDefaults()
 			SECTION_NAME, PARAM_SESSIONKEY, QT_TO_UTF8(SessionKey));
 		config_set_default_string(obsConfig,
 			SECTION_NAME, PARAM_CONNECTURL, QT_TO_UTF8(ConnectUrl));
+		config_set_default_bool(obsConfig, SECTION_NAME,
+			PARAM_AUTORECONNECT, AutoReconnect);
 	}
 }
 

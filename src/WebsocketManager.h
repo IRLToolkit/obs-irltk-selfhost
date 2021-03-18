@@ -20,21 +20,26 @@ class WebsocketManager : public QObject {
 
 		QString SessionKey;
 
-		void Connect(QString url);
-		void Disconnect();
-
 		QThreadPool* GetThreadPool() {
 			return &_threadPool;
+		}
+
+		QAbstractSocket::SocketState GetSocketState() {
+			return _socket.state();
 		}
 
 		bool IsConnected() {
 			return _socket.isValid();
 		}
+
 		bool IsAuthenticated() {
 			return isAuthenticated;
 		}
+
 	public Q_SLOTS:
-			void SendTextMessage(QString message);
+		void Connect(QString url);
+		void Disconnect();
+		void SendTextMessage(QString message);
 
 	signals:
 		void connectionStateChanged(QAbstractSocket::SocketState state);
@@ -46,10 +51,10 @@ class WebsocketManager : public QObject {
 		void onDisconnected();
 		void onTextMessageReceived(QString message);
 		void onSslErrors(const QList<QSslError> &errors);
+		void _Authenticate();
+
 	private:
 		QWebSocket _socket;
 		QThreadPool _threadPool;
 		bool isAuthenticated;
-
-		void _Authenticate();
 };
