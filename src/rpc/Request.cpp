@@ -95,3 +95,18 @@ const RequestStatus Request::ValidateObject(const QString keyName, QString *comm
 
 	return RequestStatus::NoError;
 }
+
+const RequestStatus Request::ValidateArray(const QString keyName, QString *comment) const
+{
+	RequestStatus basicValidation = ValidateBasic(keyName, comment);
+	if (basicValidation != RequestStatus::NoError)
+		return basicValidation;
+
+	if (!_requestData[keyName].isArray()) {
+		if (comment)
+			*comment = QString("Parameter: %1\nRequired: array").arg(keyName);
+		return RequestStatus::InvalidRequestParameterDataType;
+	}
+
+	return RequestStatus::NoError;
+}

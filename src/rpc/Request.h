@@ -135,6 +135,7 @@ class Request {
 		const RequestStatus ValidateString(const QString keyName, QString *comment = nullptr) const;
 		const RequestStatus ValidateBool(const QString keyName, QString *comment = nullptr) const;
 		const RequestStatus ValidateObject(const QString keyName, QString *comment = nullptr) const;
+		const RequestStatus ValidateArray(const QString keyName, QString *comment = nullptr) const;
 	private:
 		const QString _requestType;
 		const QString _messageId;
