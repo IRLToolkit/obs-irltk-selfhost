@@ -3,6 +3,7 @@
 
 const QHash<QString, MethodHandler> RequestHandler::RequestHandlerMap
 {
+	// General
 	{ "Sleep", &RequestHandler::Sleep },
 	{ "GetBaseInfo", &RequestHandler::GetBaseInfo },
 	{ "GetVideoSettings", &RequestHandler::GetVideoSettings },
@@ -15,6 +16,8 @@ const QHash<QString, MethodHandler> RequestHandler::RequestHandlerMap
 	{ "SetProfile", &RequestHandler::SetProfile },
 	{ "GetSceneCollectionList", &RequestHandler::GetProfileList },
 	{ "SetSceneCollection", &RequestHandler::SetProfile },
+
+	// Output
 	{ "GetRecordStatus", &RequestHandler::GetRecordStatus },
 	{ "StartRecording", &RequestHandler::StartRecording },
 	{ "StopRecording", &RequestHandler::StopRecording },
@@ -23,6 +26,9 @@ const QHash<QString, MethodHandler> RequestHandler::RequestHandlerMap
 	{ "StopStreaming", &RequestHandler::StopStreaming },
 	{ "GetStreamSettings", &RequestHandler::GetStreamSettings },
 	{ "SetStreamSettings", &RequestHandler::SetStreamSettings },
+
+	// Scenes
+	{ "SetCurrentScene", &RequestHandler::SetCurrentScene },
 };
 
 RequestHandler::RequestHandler()

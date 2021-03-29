@@ -30,6 +30,7 @@ class RequestHandler {
 		QString UtilsGetSourceMediaState(obs_source_t *source);
 		QJsonArray UtilsStringListToQt(char **list);
 
+		// General
 		RequestResult Sleep(const Request&);
 		RequestResult GetBaseInfo(const Request&);
 		RequestResult GetVideoSettings(const Request&);
@@ -42,6 +43,8 @@ class RequestHandler {
 		RequestResult SetProfile(const Request&);
 		RequestResult GetSceneCollectionList(const Request&);
 		RequestResult SetSceneCollection(const Request&);
+
+		// Output
 		RequestResult GetRecordStatus(const Request&);
 		RequestResult StartRecording(const Request&);
 		RequestResult StopRecording(const Request&);
@@ -50,4 +53,7 @@ class RequestHandler {
 		RequestResult StopStreaming(const Request&);
 		RequestResult GetStreamSettings(const Request&);
 		RequestResult SetStreamSettings(const Request&);
+
+		// Scenes
+		RequestResult SetCurrentScene(const Request&);
 };
