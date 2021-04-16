@@ -32,8 +32,7 @@ SettingsDialog::SettingsDialog(QWidget* parent) :
 
 	auto websocketManager = GetWebsocketManager();
 	QObject::connect(websocketManager.get(), &WebsocketManager::connectionStateChanged, this, &SettingsDialog::onConnectionStateChanged);
-	QObject::connect(websocketManager.get(), &WebsocketManager::connectionAuthenticationFailure, this, &SettingsDialog::onAuthenticationFailed);
-	QObject::connect(websocketManager.get(), &WebsocketManager::connectionAuthenticationSuccess, [=]() {
+	QObject::connect(websocketManager.get(), &WebsocketManager::connectionIdentificationSuccess, [=]() {
 		SetConnectionStatusIndicator(true);
 	});	
 }
@@ -130,38 +129,54 @@ void SettingsDialog::ConnectDisconnectButtonClicked()
 		UpdateConnectUi();
 	} else if (websocketManager->IsConnected()) {
 		websocketManuallyDisconnected = true;
-		websocketManager->Disconnect();
+		QMetaObject::invokeMethod(websocketManager.get(), "Disconnect");
 	} else {
-		websocketManager->Connect(conf->ConnectUrl);
+		QMetaObject::invokeMethod(websocketManager.get(), "Connect", Q_ARG(QString, conf->ConnectUrl));
 	}
 }
 
 void SettingsDialog::onConnectionStateChanged(QAbstractSocket::SocketState state)
 {
 #ifdef DEBUG_MODE
-	blog(LOG_INFO, "Socket state changed. New state: %d", state);
+	blog(LOG_INFO, "[SettingsDialog::onConnectionStateChanged] Socket state changed. New state: %d", state);
 #endif
 	auto config = GetConfig();
+	auto websocketManager = GetWebsocketManager();
+	uint16_t closeCode = websocketManager->GetCloseCode();
 
 	UpdateConnectUi();
 	if (state == QAbstractSocket::UnconnectedState) {
-		if (config->AutoReconnect)
+
+		if (websocketManager->GetCloseError() != QAbstractSocket::UnknownSocketError) {
+			if (isVisible() && !reconnectTimer->isActive()) {
+				QMessageBox msgBox;
+				msgBox.setWindowTitle(obs_module_text("IRLTKSelfHost.Panel.ErrorTitle"));
+				msgBox.setText(QString(obs_module_text("IRLTKSelfHost.Panel.ConnectionClosedProtocolMessage")).arg(websocketManager->GetCloseErrorString()));
+				msgBox.exec();
+			}
+		} else if (closeCode == WebsocketManager::CloseCode::AuthenticationFailed) {
+			blog(LOG_INFO, "[SettingsDialog::onConnectionStateChanged] Identification failed/expired with the following reason: %s", QT_TO_UTF8(websocketManager->GetCloseReason()));
+			if (isVisible() && !reconnectTimer->isActive()) {
+				QMessageBox msgBox;
+				msgBox.setWindowTitle(obs_module_text("IRLTKSelfHost.Panel.ErrorTitle"));
+				msgBox.setText(QString(obs_module_text("IRLTKSelfHost.Panel.IdentificationFailedMessage")).arg(websocketManager->GetCloseReason()));
+				msgBox.exec();
+			}
+		} else if (closeCode == WebsocketManager::CloseCode::SessionAlreadyExists) {
+			blog(LOG_INFO, "[SettingsDialog::onConnectionStateChanged] Identification failed because there is already an OBS client connected to the server with the configured session key.");
+			if (isVisible() && !reconnectTimer->isActive()) {
+				QMessageBox msgBox;
+				msgBox.setWindowTitle(obs_module_text("IRLTKSelfHost.Panel.ErrorTitle"));
+				msgBox.setText(QString(obs_module_text("IRLTKSelfHost.Panel.IdentificationFailedMessage")).arg(websocketManager->GetCloseReason()));
+				msgBox.exec();
+			}
+		}
+
+		if (config->AutoReconnect && closeCode != WebsocketManager::CloseCode::AuthenticationFailed) {
 			StartReconnectTimer();
+		}
 	} else if (state == QAbstractSocket::ConnectedState) {
 		StopReconnectTimer();
-	}
-}
-
-void SettingsDialog::onAuthenticationFailed(QString failureReason)
-{
-	StopReconnectTimer();
-	UpdateConnectUi();
-	blog(LOG_INFO, "Authentication failed/expired with the following reason: %s", QT_TO_UTF8(failureReason));
-	if (isVisible()) {
-		QMessageBox msgBox;
-		msgBox.setWindowTitle(obs_module_text("IRLTKSelfHost.Panel.ErrorTitle"));
-		msgBox.setText(QString(obs_module_text("IRLTKSelfHost.Panel.AuthenticationFailedMessage")).arg(failureReason));
-		msgBox.exec();
 	}
 }
 
@@ -169,7 +184,7 @@ void SettingsDialog::onReconnectTimerTimeout()
 {
 	if (reconnectAttempts > 99) {
 #ifdef DEBUG_MODE
-		blog(LOG_INFO, "Stopping reconnect timer because reconnects reached 100.");
+		blog(LOG_INFO, "[SettingsDialog::onReconnectTimerTimeout] Stopping reconnect timer because reconnect attempts reached 100.");
 #endif
 		UpdateConnectUi();
 		return;
@@ -188,7 +203,7 @@ void SettingsDialog::onReconnectTimerTimeout()
         }
 		reconnectTimerCurrentCountdown = reconnectTimerTotal;
 		reconnectAttempts++;
-		websocketManager->Connect(config->ConnectUrl);
+		QMetaObject::invokeMethod(websocketManager.get(), "Connect", Q_ARG(QString, config->ConnectUrl));
 	}
 	reconnectTimer->start(1000);
 }

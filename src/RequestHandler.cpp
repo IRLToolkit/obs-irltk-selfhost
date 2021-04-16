@@ -39,9 +39,9 @@ RequestResult RequestHandler::ProcessIncomingMessage(QJsonObject parsedMessage)
 {
 	RequestStatus errorCode = RequestStatus::NoError;
 	QString requestType = parsedMessage["requestType"].toString();
-    QString messageId;
-	if (parsedMessage.contains("messageId"))
-		messageId = parsedMessage["messageId"].toString();
+    QString requestId;
+	if (parsedMessage.contains("requestId"))
+		requestId = parsedMessage["requestId"].toString();
 
 	QJsonObject requestData;
 	if (parsedMessage.contains("requestData")) {
@@ -51,7 +51,7 @@ RequestResult RequestHandler::ProcessIncomingMessage(QJsonObject parsedMessage)
 			errorCode = RequestStatus::InvalidRequestParameterDataType;
 	}
 
-	Request request(requestType, messageId, requestData);
+	Request request(requestType, requestId, requestData);
 	if (errorCode != RequestStatus::NoError)
 		return RequestResult::BuildFailure(request, errorCode);
 
@@ -67,7 +67,7 @@ QJsonObject RequestHandler::GetResultJson(const RequestResult requestResult)
 	QJsonObject result;
 
 	result["requestType"] = requestResult.RequestType();
-	result["messageId"] = requestResult.MessageId();
+	result["requestId"] = requestResult.requestId();
 	result["statusCode"] = requestResult.StatusCode();
 	if (requestResult.StatusCode() == RequestStatus::Success) {
 		result["status"] = true;

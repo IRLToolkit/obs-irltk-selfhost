@@ -68,7 +68,7 @@ bool obs_module_load(void)
 #ifdef DEBUG_MODE
 		blog(LOG_INFO, "Connect on load enabled. Connecting to websocket server now.");
 #endif
-		_websocketManager->Connect(_config->ConnectUrl);
+		QMetaObject::invokeMethod(_websocketManager.get(), "Connect", Q_ARG(QString, _config->ConnectUrl));
 	}
 
 	return true;
@@ -77,7 +77,7 @@ bool obs_module_load(void)
 void obs_module_unload()
 {
 	_websocketManager->GetThreadPool()->waitForDone();
-	_websocketManager->Disconnect();
+	QMetaObject::invokeMethod(_websocketManager.get(), "Disconnect");
 	_config.reset();
 	blog(LOG_INFO, "Finished unloading.");
 }

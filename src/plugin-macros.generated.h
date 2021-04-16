@@ -20,7 +20,7 @@ with this program. If not, see <https://www.gnu.org/licenses/>
 #define PLUGINNAME_H
 
 #define PLUGIN_NAME "obs-irltk-selfhost"
-#define PLUGIN_VERSION "1.0.0"
+#define PLUGIN_VERSION "1.2.0"
 
 #define blog(level, msg, ...) blog(level, "[" PLUGIN_NAME "] " msg, ##__VA_ARGS__)
 

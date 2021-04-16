@@ -1,8 +1,8 @@
 #include "Request.h"
 
-Request::Request(const QString& requestType, const QString& messageId, QJsonObject requestData) :
+Request::Request(const QString& requestType, const QString& requestId, QJsonObject requestData) :
 	_requestType(requestType),
-	_messageId(messageId)
+	_requestId(requestId)
 {
 	if (!requestData.empty())
 		_requestData.swap(requestData);

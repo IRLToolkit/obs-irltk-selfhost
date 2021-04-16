@@ -6,7 +6,7 @@ endif()
 
 # Change obs-plugintemplate to your plugin's name in a machine-readable format
 # (e.g.: obs-myawesomeplugin) and set
-project(obs-irltk-selfhost VERSION 1.1.0)
+project(obs-irltk-selfhost VERSION 1.2.0)
 
 # Replace `Your Name Here` with the name (yours or your organization's) you want
 # to see as the author of the plugin (in the plugin's metadata itself and in the installers)

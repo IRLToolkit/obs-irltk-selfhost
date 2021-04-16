@@ -1,2 +1,2 @@
 set PluginName=obs-irltk-selfhost
-set PluginVersion=1.0.0
+set PluginVersion=1.2.0

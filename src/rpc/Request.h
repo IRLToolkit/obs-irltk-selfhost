@@ -108,16 +108,16 @@ enum RequestStatus: std::uint16_t {
 
 class Request {
 	public:
-		explicit Request(const QString& requestType, const QString& messageId, QJsonObject requestData);
+		explicit Request(const QString& requestType, const QString& requestId, QJsonObject requestData);
 
 		const QString& RequestType() const
 		{
 			return _requestType;
 		}
 
-		const QString& MessageId() const
+		const QString& requestId() const
 		{
-			return _messageId;
+			return _requestId;
 		}
 
 		const QJsonObject& RequestData() const
@@ -138,7 +138,7 @@ class Request {
 		const RequestStatus ValidateArray(const QString keyName, QString *comment = nullptr) const;
 	private:
 		const QString _requestType;
-		const QString _messageId;
+		const QString _requestId;
 		QJsonObject _requestData;
 };
 
@@ -167,15 +167,15 @@ class RequestResult {
 			return _requestType;
 		}
 
-		const QString& MessageId() const
+		const QString& requestId() const
 		{
-			return _messageId;
+			return _requestId;
 		}
 
 	private:
 		explicit RequestResult(
 			const QString& requestType,
-			const QString& messageId,
+			const QString& requestId,
 			RequestStatus status,
 			const QString& comment,
 			QJsonObject additionalFields
@@ -185,5 +185,5 @@ class RequestResult {
 		QString _comment;
 		QJsonObject _additionalFields;
 		const QString _requestType;
-		const QString _messageId;
+		const QString _requestId;
 };

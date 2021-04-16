@@ -2,13 +2,13 @@
 
 RequestResult::RequestResult(
 	const QString& requestType,
-	const QString& messageId,
+	const QString& requestId,
 	RequestStatus status,
 	const QString& comment,
 	QJsonObject additionalFields
 ) :
 	_requestType(requestType),
-	_messageId(messageId),
+	_requestId(requestId),
 	_status(status),
 	_comment(comment)
 {
@@ -18,12 +18,12 @@ RequestResult::RequestResult(
 
 const RequestResult RequestResult::BuildSuccess(const Request& request, QJsonObject additionalFields)
 {
-	RequestResult result(request.RequestType(), request.MessageId(), RequestStatus::Success, nullptr, additionalFields);
+	RequestResult result(request.RequestType(), request.requestId(), RequestStatus::Success, nullptr, additionalFields);
 	return result;
 }
 
 const RequestResult RequestResult::BuildFailure(const Request& request, RequestStatus statusCode, const QString& comment)
 {
-	RequestResult result(request.RequestType(), request.MessageId(), statusCode, comment, QJsonObject());
+	RequestResult result(request.RequestType(), request.requestId(), statusCode, comment, QJsonObject());
 	return result;
 }

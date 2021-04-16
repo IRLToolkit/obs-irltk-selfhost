@@ -19,7 +19,6 @@ class SettingsDialog : public QDialog
 		void DialogButtonClicked(QAbstractButton *button);
 		void ConnectDisconnectButtonClicked();
 		void onConnectionStateChanged(QAbstractSocket::SocketState state);
-		void onAuthenticationFailed(QString failureReason);
 		void onReconnectTimerTimeout();
 
 	private:
