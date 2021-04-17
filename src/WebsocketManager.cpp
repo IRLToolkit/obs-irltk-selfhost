@@ -6,8 +6,6 @@ WebsocketManager::WebsocketManager() :
 	SessionKey(""),
 	isIdentified(false)
 {
-	//_socket = new QWebSocket();
-
 	qRegisterMetaType<QAbstractSocket::SocketState>();
 
 	connect(&_socket, &QWebSocket::connected, this, &WebsocketManager::onConnected);
@@ -19,7 +17,7 @@ WebsocketManager::WebsocketManager() :
 	});
 
 	_socket.moveToThread(&_workerThread);
-	this->moveToThread(&_workerThread);
+	this->moveToThread(&_workerThread); // This is required for some fuckshit reason
 	_workerThread.start();
 }
 

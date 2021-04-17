@@ -16,31 +16,41 @@ jobs:
     vmImage: 'windows-2019'
   variables:
     build_config: RelWithDebInfo
-    DepsBasePath: 'D:\obsdependencies'
-    DepsPath32: '$(DepsBasePath)\win32'
-    DepsPath64: '$(DepsBasePath)\win64'
-    QtBaseDir: 'D:\QtDep'
-    QTDIR32: '$(QtBaseDir)\5.15.2\msvc2019'
-    QTDIR64: '$(QtBaseDir)\5.15.2\msvc2019_64'
-    OBSPath: 'D:\obs-studio'
+    DEPS_CACHE_VERSION: '1' # Change whenever updating OBS dependencies URL, in order to force a cache reset
+    DEPS_BASE_PATH: 'D:\obsdependencies'
+    DEPS_PATH_32: '$(DEPS_BASE_PATH)\win32'
+    DEPS_PATH_64: '$(DEPS_BASE_PATH)\win64'
+    QT_CACHE_VERSION: '1' # Change whenever updating Qt dependency URL, in order to force a cache reset
+    QT_BASE_DIR: 'D:\QtDep'
+    QTDIR32: '$(QT_BASE_DIR)\5.15.2\msvc2019'
+    QTDIR64: '$(QT_BASE_DIR)\5.15.2\msvc2019_64'
+    OBS_PATH: 'D:\obs-studio'
   steps:
     - checkout: self
       submodules: true
 
-    - script: ./ci/windows/install-qt-win.cmd
+    - task: Cache@2
+      displayName: Restore cached Qt archive file
+      inputs:
+        key: 'qtdep-"$(QT_CACHE_VERSION)" | "$(Agent.OS)"'
+        restoreKeys: |
+          qtdep-"$(QT_CACHE_VERSION)" | "$(Agent.OS)"
+        path: $(QT_BASE_DIR)
+
+    - script: ./CI/windows/install-qt-win.cmd
       displayName: 'Install Qt'
       env:
-        QtBaseDir: $(QtBaseDir)
+        QT_BASE_DIR: $(QT_BASE_DIR)
 
     - task: Cache@2
       displayName: Restore cached OBS Studio dependencies
       inputs:
-        key: 'obsdeps | "$(Agent.OS)"'
+        key: 'obsdeps-"$(DEPS_CACHE_VERSION)" | "$(Agent.OS)"'
         restoreKeys: |
-          obsdeps | "$(Agent.OS)"
-        path: $(DepsBasePath)
+          obsdeps-"$(DEPS_CACHE_VERSION)" | "$(Agent.OS)"
+        path: $(DEPS_BASE_PATH)
 
-    - script: ./ci/windows/download-obs-deps.cmd
+    - script: ./CI/windows/download-obs-deps.cmd
       displayName: 'Download OBS Studio dependencies'
 
     - task: Cache@2
@@ -49,52 +59,52 @@ jobs:
         key: 'obs | "$(Agent.OS)"'
         restoreKeys: |
           obs | "$(Agent.OS)"
-        path: $(OBSPath)
+        path: $(OBS_PATH)
 
-    - script: ./ci/windows/prepare-obs-windows.cmd
+    - script: ./CI/windows/prepare-obs-windows.cmd
       displayName: 'Checkout & CMake OBS Studio'
       env:
         build_config: $(build_config)
-        DepsPath32: $(DepsPath32)
-        DepsPath64: $(DepsPath64)
+        DEPS_PATH_32: $(DEPS_PATH_32)
+        DEPS_PATH_64: $(DEPS_PATH_64)
         QTDIR32: $(QTDIR32)
         QTDIR64: $(QTDIR64)
-        OBSPath: $(OBSPath)
+        OBS_PATH: $(OBS_PATH)
 
     - task: MSBuild@1
       displayName: 'Build OBS Studio 32-bit'
       inputs:
         msbuildArguments: '/m /p:Configuration=$(build_config)'
-        solution: '$(OBSPath)\build32\obs-studio.sln'
+        solution: '$(OBS_PATH)\build32\obs-studio.sln'
 
     - task: MSBuild@1
       displayName: 'Build OBS Studio 64-bit'
       inputs:
         msbuildArguments: '/m /p:Configuration=$(build_config)'
-        solution: '$(OBSPath)\build64\obs-studio.sln'
+        solution: '$(OBS_PATH)\build64\obs-studio.sln'
 
-    - script: ./ci/windows/prepare-windows.cmd
-      displayName: 'CMake Plugin'
+    - script: ./CI/windows/prepare-plugin-windows.cmd
+      displayName: 'CMake obs-websocket'
       env:
         build_config: $(build_config)
         QTDIR32: $(QTDIR32)
         QTDIR64: $(QTDIR64)
-        OBSPath: $(OBSPath)
+        OBS_PATH: $(OBS_PATH)
 
     - task: MSBuild@1
-      displayName: 'Build Plugin 32-bit'
+      displayName: 'Build obs-irltk-selfhost 32-bit'
       inputs:
         msbuildArguments: '/m /p:Configuration=$(build_config)'
         solution: '.\build32\main.sln'
 
     - task: MSBuild@1
-      displayName: 'Build Plugin 64-bit'
+      displayName: 'Build obs-irltk-selfhost 64-bit'
       inputs:
         msbuildArguments: '/m /p:Configuration=$(build_config)'
         solution: '.\build64\main.sln'
 
-    - script: ./ci/windows/package-windows.cmd
-      displayName: 'Package Plugin'
+    - script: ./CI/windows/package-plugin-windows.cmd
+      displayName: 'Package obs-irltk-selfhost'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Upload package artifacts'

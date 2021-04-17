@@ -32,9 +32,7 @@ SettingsDialog::SettingsDialog(QWidget* parent) :
 
 	auto websocketManager = GetWebsocketManager();
 	QObject::connect(websocketManager.get(), &WebsocketManager::connectionStateChanged, this, &SettingsDialog::onConnectionStateChanged);
-	QObject::connect(websocketManager.get(), &WebsocketManager::connectionIdentificationSuccess, [=]() {
-		SetConnectionStatusIndicator(true);
-	});	
+	QObject::connect(websocketManager.get(), &WebsocketManager::connectionIdentificationSuccess, [=]() {SetConnectionStatusIndicator(true);});
 }
 
 SettingsDialog::~SettingsDialog()
@@ -146,7 +144,6 @@ void SettingsDialog::onConnectionStateChanged(QAbstractSocket::SocketState state
 
 	UpdateConnectUi();
 	if (state == QAbstractSocket::UnconnectedState) {
-
 		if (websocketManager->GetCloseError() != QAbstractSocket::UnknownSocketError) {
 			if (isVisible() && !reconnectTimer->isActive()) {
 				QMessageBox msgBox;
