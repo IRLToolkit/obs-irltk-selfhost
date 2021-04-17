@@ -78,6 +78,7 @@ void obs_module_unload()
 {
 	_websocketManager->GetThreadPool()->waitForDone();
 	QMetaObject::invokeMethod(_websocketManager.get(), "Disconnect");
+	_websocketManager.reset();
 	_config.reset();
 	blog(LOG_INFO, "Finished unloading.");
 }
