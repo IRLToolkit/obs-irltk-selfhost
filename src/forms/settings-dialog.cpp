@@ -167,9 +167,22 @@ void SettingsDialog::onConnectionStateChanged(QAbstractSocket::SocketState state
 				msgBox.setText(QString(obs_module_text("IRLTKSelfHost.Panel.IdentificationFailedMessage")).arg(websocketManager->GetCloseReason()));
 				msgBox.exec();
 			}
+		} else if (closeCode >= 4000) {
+			if (isVisible() && !reconnectTimer->isActive()) {
+				QMessageBox msgBox;
+				msgBox.setWindowTitle(obs_module_text("IRLTKSelfHost.Panel.ErrorTitle"));
+				msgBox.setText(QString(obs_module_text("IRLTKSelfHost.Panel.IdentificationFailedMessage")).arg(websocketManager->GetCloseReason()));
+				msgBox.exec();
+			}
 		}
 
-		if (config->AutoReconnect && closeCode != WebsocketManager::CloseCode::AuthenticationFailed) {
+		if (config->AutoReconnect && 
+			closeCode != WebsocketManager::CloseCode::NotIdentified &&
+			closeCode != WebsocketManager::CloseCode::AuthenticationFailed &&
+			closeCode != WebsocketManager::CloseCode::InvalidIdentifyParameter &&
+			closeCode != WebsocketManager::CloseCode::UnsupportedProtocolVersion &&
+			closeCode != WebsocketManager::CloseCode::SessionAlreadyExists
+		){
 			StartReconnectTimer();
 		}
 	} else if (state == QAbstractSocket::ConnectedState) {

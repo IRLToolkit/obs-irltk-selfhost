@@ -4,31 +4,35 @@
 const QHash<QString, MethodHandler> RequestHandler::RequestHandlerMap
 {
 	// General
+	{ "GetVersion", &RequestHandler::GetVersion },
 	{ "Sleep", &RequestHandler::Sleep },
-	{ "GetBaseInfo", &RequestHandler::GetBaseInfo },
+	{ "CacheUpdate", &RequestHandler::CacheUpdate },
+	{ "LogDump", &RequestHandler::LogDump },
+
+	// Config
+	{ "GetSceneCollectionList", &RequestHandler::GetSceneCollectionList },
+	{ "SetCurrentSceneCollection", &RequestHandler::SetCurrentSceneCollection },
+	{ "GetProfileList", &RequestHandler::GetProfileList },
+	{ "SetCurrentProfile", &RequestHandler::SetCurrentProfile },
 	{ "GetVideoSettings", &RequestHandler::GetVideoSettings },
 #ifdef IRLTK_CLOUD
 	{ "SetVideoSettings", &RequestHandler::SetVideoSettings },
 #endif
-	{ "CacheUpdate", &RequestHandler::CacheUpdate },
-	{ "LogDump", &RequestHandler::LogDump },
-	{ "GetProfileList", &RequestHandler::GetProfileList },
-	{ "SetProfile", &RequestHandler::SetProfile },
-	{ "GetSceneCollectionList", &RequestHandler::GetProfileList },
-	{ "SetSceneCollection", &RequestHandler::SetProfile },
-
-	// Output
-	{ "GetRecordStatus", &RequestHandler::GetRecordStatus },
-	{ "StartRecording", &RequestHandler::StartRecording },
-	{ "StopRecording", &RequestHandler::StopRecording },
-	{ "GetStreamStatus", &RequestHandler::GetStreamStatus },
-	{ "StartStreaming", &RequestHandler::StartStreaming },
-	{ "StopStreaming", &RequestHandler::StopStreaming },
-	{ "GetStreamSettings", &RequestHandler::GetStreamSettings },
-	{ "SetStreamSettings", &RequestHandler::SetStreamSettings },
 
 	// Scenes
-	{ "SetCurrentScene", &RequestHandler::SetCurrentScene },
+	{ "SetCurrentProgramScene", &RequestHandler::SetCurrentProgramScene },
+
+	// Stream
+	{ "GetStreamStatus", &RequestHandler::GetStreamStatus },
+	{ "StartStream", &RequestHandler::StartStream },
+	{ "StopStream", &RequestHandler::StopStream },
+	{ "GetStreamServiceSettings", &RequestHandler::GetStreamServiceSettings },
+	{ "SetStreamServiceSettings", &RequestHandler::SetStreamServiceSettings },
+
+	// Record
+	{ "GetRecordStatus", &RequestHandler::GetRecordStatus },
+	{ "StartRecord", &RequestHandler::StartRecord },
+	{ "StopRecord", &RequestHandler::StopRecord },
 };
 
 RequestHandler::RequestHandler()
@@ -68,18 +72,21 @@ QJsonObject RequestHandler::GetResultJson(const RequestResult requestResult)
 
 	result["requestType"] = requestResult.RequestType();
 	result["requestId"] = requestResult.requestId();
-	result["statusCode"] = requestResult.StatusCode();
+
+	QJsonObject status;
+	status["code"] = requestResult.StatusCode();
 	if (requestResult.StatusCode() == RequestStatus::Success) {
-		result["status"] = true;
+		status["result"] = true;
 		QJsonObject additionalFields = requestResult.AdditionalFields();
 		if (!additionalFields.empty())
 			result["responseData"] = additionalFields;
 	} else {
-		result["status"] = false;
+		result["result"] = false;
 		QString comment = requestResult.Comment();
 		if (!comment.isEmpty() && !comment.isNull())
-			result["comment"] = comment;
+			status["comment"] = comment;
 	}
+	result["requestStatus"] = status;
 
 	return result;
 }
@@ -136,6 +143,18 @@ QString RequestHandler::UtilsGetOutputTimecode(obs_output_t *output)
 	uint64_t msPart = ms % 1000ULL;
 
 	return QString::asprintf("%02" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ".%03" PRIu64, hoursPart, minutesPart, secsPart, msPart);
+}
+
+uint64_t RequestHandler::UtilsGetOutputDuration(obs_output_t *output)
+{
+	if (!output || !obs_output_active(output))
+		return 0;
+
+	video_t* video = obs_output_video(output);
+	uint64_t frameTimeNs = video_output_get_frame_time(video);
+	int totalFrames = obs_output_get_total_frames(output);
+
+	return (((uint64_t)totalFrames) * frameTimeNs) / 1000000ULL;
 }
 
 QString RequestHandler::UtilsGetSourceMediaState(obs_source_t *source)

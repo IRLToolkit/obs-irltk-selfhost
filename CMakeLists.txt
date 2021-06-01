@@ -4,22 +4,13 @@ if(WIN32)
 	cmake_minimum_required(VERSION 3.16)
 endif()
 
-# Change obs-plugintemplate to your plugin's name in a machine-readable format
-# (e.g.: obs-myawesomeplugin) and set
-project(obs-irltk-selfhost VERSION 1.2.0)
+project(obs-irltk-selfhost VERSION 1.3.0)
 
-# Replace `Your Name Here` with the name (yours or your organization's) you want
-# to see as the author of the plugin (in the plugin's metadata itself and in the installers)
 set(PLUGIN_AUTHOR "tt2468")
 
-# Replace `com.example.obs-plugin-template` with a unique Bundle ID for macOS releases
-# (used both in the installer and when submitting the installer for notarization)
 set(MACOS_BUNDLEID "com.obsplugin.obs-irltk-selfhost")
 
-# Replace `me@contoso.com` with the maintainer email address you want to put in Linux packages
 set(LINUX_MAINTAINER_EMAIL "tt2468@irltoolkit.com")
-
-# TAKE NOTE: No need to edit things past this point
 
 set(CMAKE_PREFIX_PATH "${QTDIR}")
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -67,10 +58,17 @@ set(PLUGIN_SOURCES
 	src/WebsocketManager.cpp
     src/RequestHandler.cpp
     src/RequestHandler_General.cpp
-    src/RequestHandler_Output.cpp
-    src/RequestHandler_SceneItems.cpp
-    src/RequestHandler_Scenes.cpp
+    src/RequestHandler_Config.cpp
     src/RequestHandler_Sources.cpp
+    src/RequestHandler_Scenes.cpp
+    src/RequestHandler_Inputs.cpp
+    src/RequestHandler_Transitions.cpp
+    src/RequestHandler_Filters.cpp
+    src/RequestHandler_SceneItems.cpp
+    src/RequestHandler_Outputs.cpp
+    src/RequestHandler_Stream.cpp
+    src/RequestHandler_Record.cpp
+    src/RequestHandler_MediaInputs.cpp
     src/rpc/Request.cpp
     src/rpc/RequestResult.cpp
 	src/forms/settings-dialog.cpp

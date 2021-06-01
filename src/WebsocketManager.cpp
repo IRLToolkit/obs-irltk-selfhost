@@ -63,7 +63,7 @@ void WebsocketManager::_SendIdentify()
 	QJsonObject identificationObject;
 	identificationObject["messageType"] = "Identify";
 	identificationObject["sessionKey"] = SessionKey;
-	identificationObject["websocketClientVersion"] = PLUGIN_VERSION;
+	identificationObject["rpcVersion"] = PLUGIN_VERSION;
 
 	QString messageText(QJsonDocument(identificationObject).toJson());
 	QMetaObject::invokeMethod(this, "SendTextMessage", Q_ARG(QString, messageText));
@@ -112,6 +112,9 @@ void WebsocketManager::onTextMessageReceived(QString message)
 		}
 
 		if (parsedMessage["messageType"].toString() == "Request") {
+			if (!isIdentified)
+				return;
+
 			if (!parsedMessage.contains("requestType")) {
 				blog(LOG_ERROR, "[WebsocketManager::onTextMessageReceived] Incoming message of type `Request` is missing the `requestType` field.");
 				return;
@@ -124,6 +127,9 @@ void WebsocketManager::onTextMessageReceived(QString message)
 			QString resultText = QJsonDocument(resultJson).toJson();
 			QMetaObject::invokeMethod(this, "SendTextMessage", Q_ARG(QString, resultText));
 		} else if (parsedMessage["messageType"].toString() == "RequestBatch") {
+			if (!isIdentified)
+				return;
+
 			if (!parsedMessage.contains("requests")) {
 				blog(LOG_ERROR, "[WebsocketManager::onTextMessageReceived] Incoming message of type `RequestBatch` is missing the `requests` field.");
 				return;

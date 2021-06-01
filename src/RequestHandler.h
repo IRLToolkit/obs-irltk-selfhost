@@ -27,33 +27,38 @@ class RequestHandler {
 		QJsonObject UtilsObsDataToQt(obs_data_t *data);
 		obs_data_t *UtilsQtToObsData(QJsonObject data);
 		QString UtilsGetOutputTimecode(obs_output_t *output);
+		uint64_t UtilsGetOutputDuration(obs_output_t *output);
 		QString UtilsGetSourceMediaState(obs_source_t *source);
 		QJsonArray UtilsStringListToQt(char **list);
 
 		// General
+		RequestResult GetVersion(const Request&);
 		RequestResult Sleep(const Request&);
-		RequestResult GetBaseInfo(const Request&);
+		RequestResult CacheUpdate(const Request&);
+		RequestResult LogDump(const Request&);
+
+		// Config
+		RequestResult GetProfileList(const Request&);
+		RequestResult SetCurrentProfile(const Request&);
+		RequestResult GetSceneCollectionList(const Request&);
+		RequestResult SetCurrentSceneCollection(const Request&);
 		RequestResult GetVideoSettings(const Request&);
 #ifdef IRLTK_CLOUD // Pending newer OBS version
 		RequestResult SetVideoSettings(const Request&);
 #endif
-		RequestResult CacheUpdate(const Request&);
-		RequestResult LogDump(const Request&);
-		RequestResult GetProfileList(const Request&);
-		RequestResult SetProfile(const Request&);
-		RequestResult GetSceneCollectionList(const Request&);
-		RequestResult SetSceneCollection(const Request&);
-
-		// Output
-		RequestResult GetRecordStatus(const Request&);
-		RequestResult StartRecording(const Request&);
-		RequestResult StopRecording(const Request&);
-		RequestResult GetStreamStatus(const Request&);
-		RequestResult StartStreaming(const Request&);
-		RequestResult StopStreaming(const Request&);
-		RequestResult GetStreamSettings(const Request&);
-		RequestResult SetStreamSettings(const Request&);
 
 		// Scenes
-		RequestResult SetCurrentScene(const Request&);
+		RequestResult SetCurrentProgramScene(const Request&);
+
+		// Stream
+		RequestResult GetStreamStatus(const Request&);
+		RequestResult StartStream(const Request&);
+		RequestResult StopStream(const Request&);
+		RequestResult GetStreamServiceSettings(const Request&);
+		RequestResult SetStreamServiceSettings(const Request&);
+
+		// Record
+		RequestResult GetRecordStatus(const Request&);
+		RequestResult StartRecord(const Request&);
+		RequestResult StopRecord(const Request&);
 };

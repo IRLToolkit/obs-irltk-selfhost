@@ -1,6 +1,6 @@
 #include "RequestHandler.h"
 
-RequestResult RequestHandler::SetCurrentScene(const Request& request)
+RequestResult RequestHandler::SetCurrentProgramScene(const Request& request)
 {
 	QString comment;
 	RequestStatus checkStatus = request.ValidateString("sceneName", &comment);
